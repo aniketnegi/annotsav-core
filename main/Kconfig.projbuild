@@ -1,0 +1,5 @@
+menu "Project INDRA Configuration"
+
+    rsource "../components/wifi/Kconfig"
+
+endmenu
