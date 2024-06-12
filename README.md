@@ -30,3 +30,17 @@ Below is short explanation of remaining files in the project folder.
 ```
 Additionally, the sample project contains Makefile and component.mk files, used for the legacy Make based build system. 
 They are not used or needed when building with CMake and idf.py.
+
+
+## NOTES
+
+- `mosquitto_pub -h localhost -t indratest/commands -m "MOISTURE_GET"`
+- `mosquitto_sub -h localhost -t indratest/commands`
+- `mosquitto -c "C:\Program Files\mosquitto\mosquitto.conf" -v`
+
+mosquitto.conf
+```
+listener 1883
+allow_anonymous true
+```
+
