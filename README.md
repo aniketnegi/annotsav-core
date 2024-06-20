@@ -44,3 +44,6 @@ listener 1883
 allow_anonymous true
 ```
 
+- [ ] water on until `val`
+- [ ] water off until `val`
+- [ ] err if sens val not changing

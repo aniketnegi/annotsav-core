@@ -44,6 +44,54 @@ adc_cali_handle_t adc_cali_handle;
 bool do_calibration2 = 0;
 
 /*---------------------------------------------------------------
+        Sensor Thresholds
+---------------------------------------------------------------*/
+#define MOISTURE_THRESHOLD_LOW 1000  // Example threshold for turning the motor on
+#define MOISTURE_THRESHOLD_HIGH 2000 // Example threshold for turning the motor off
+
+
+/*---------------------------------------------------------------
+       Function to control the motor based on sensor value
+---------------------------------------------------------------*/
+void control_motor_based_on_moisture(int sensor_value)
+{
+    if (sensor_value < MOISTURE_THRESHOLD_LOW)
+    {
+        ESP_LOGI(TAG, "Moisture level low (%d), turning on water", sensor_value);
+        gpio_set_level(MOTOR, 1);
+    }
+    else if (sensor_value > MOISTURE_THRESHOLD_HIGH)
+    {
+        ESP_LOGI(TAG, "Moisture level high (%d), turning off water", sensor_value);
+        gpio_set_level(MOTOR, 0);
+    }
+}
+
+/*---------------------------------------------------------------
+       Sensor Reading and Motor Control Task
+---------------------------------------------------------------*/
+void sensor_task(void *pvParameter)
+{
+    while (1)
+    {
+        // Read sensor value
+        if (do_calibration2)
+        {
+            ESP_ERROR_CHECK(adc_cali_raw_to_voltage(adc_cali_handle, adc_raw[0], &voltage[0]));
+        }
+        else
+        {
+            ESP_ERROR_CHECK(adc_oneshot_read(adc_handle, SENS_01, &adc_raw[0]));
+        }
+
+        ESP_LOGI(TAG, "Moisture level: %d", adc_raw[0]);
+        control_motor_based_on_moisture(adc_raw[0]);
+
+        vTaskDelay(5000 / portTICK_PERIOD_MS); // Adjust the delay as needed
+    }
+}
+
+/*---------------------------------------------------------------
        MQTT Event Handler
 ---------------------------------------------------------------*/
 
@@ -204,6 +252,8 @@ void app_main(void)
     // motor stuff
     gpio_reset_pin(MOTOR);
     gpio_set_direction(MOTOR, GPIO_MODE_OUTPUT);
+
+    xTaskCreate(sensor_task, "auto function", 4096, NULL, 5, NULL);
 
     mqtt_app_start(mqtt_event_handler);
 }
